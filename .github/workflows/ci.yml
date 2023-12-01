@@ -1,0 +1,43 @@
+on:
+  pull_request:
+  push:
+      branches: [main]
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+name: ci
+jobs:
+  lint:
+    name: code lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v3
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Check
+        run: cargo check --all --all-features
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout the code
+          uses: actions/checkout@v3
+
+        - name: Install toolchain
+          uses: dtolnay/rust-toolchain@stable
+
+        - name: Test
+          run: cargo test
